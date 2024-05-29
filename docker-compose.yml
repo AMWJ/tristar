@@ -1,0 +1,16 @@
+services:
+  # flask:
+  #   image: tristar-flask
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 5000:5000
+  vite:
+    image: tristar-vite
+    build:
+      context: .
+      dockerfile: ./Dockerfile-Vite
+    ports:
+      - 8080:8080
+    tty: true
