@@ -2,7 +2,7 @@ FROM node:18-alpine
 
 WORKDIR /app
 COPY . .
-RUN npm install --no-package-lock
+RUN npm install --no-package-lock --no-audit
 
 EXPOSE 8080
 

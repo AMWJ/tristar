@@ -558,6 +558,14 @@ video {
   display: flex;
 }
 
+.aspect-\[2\] {
+  aspect-ratio: 2;
+}
+
+.h-80 {
+  height: 20rem;
+}
+
 .w-10 {
   width: 2.5rem;
 }
@@ -572,6 +580,10 @@ video {
 
 .w-full {
   width: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .flex-col {
@@ -592,6 +604,10 @@ video {
 
 .border-2 {
   border-width: 2px;
+}
+
+.border-0 {
+  border-width: 0px;
 }
 
 .border-r-8 {

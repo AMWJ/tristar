@@ -3,17 +3,18 @@ import { useServer, workoutTypes } from "./utils/client";
 import type { User, Workout, WorkoutType } from "./utils/client";
 import { getMidnight } from "./utils/utils"
 import { Chart as ChartJS, registerables } from 'chart.js/auto'
-import { Chart, Bar }            from 'react-chartjs-2'
-  
+import { Bar }            from 'react-chartjs-2'
+import { formatInTimeZone } from "date-fns-tz";
+
 import "./styles/output.css"
 
 
-const LoginComponent = ({ setLoggedInUser, getUser }) => {
+const LoginComponent = ({ setLoggedInUserName, getUser }) => {
 	const [userName, setUserName] = useState<string>("");
 
 	const login = async () => {
 		const user = await getUser(userName);
-		setLoggedInUser(user);
+		setLoggedInUserName(userName);
 	}
 
 	return (<div className="flex flex-col gap-2 pt-20 w-80 text-center">
@@ -40,7 +41,10 @@ const NewWorkoutComponent = ({ user, newWorkout}: {user: User|null,newWorkout: (
 							</select>
 		</label>
 		<label>Duration: <input className="border-2 w-10" value={duration}
-							onChange={({target})=>target.value === "" ? setDuration(0):(target.value)? setDuration(parseInt(target.value)):""}/>
+							onChange={({target})=> {
+								const stripped = target.value.replace(/\D/, "");
+								setDuration(stripped === "" ? 0 : parseInt(stripped))
+							}}/>
 		&nbsp;minutes</label>
 		<label>Date: <input type="date" value={dateString}
 							onChange={({target})=>setDate(new Date(target.value))}/>
@@ -85,33 +89,34 @@ export const BarChart = ({data}: {data: Workout[]}) => {
 		});
 		return state;
 	}, [])
-	console.log(bars)
-	return <Bar datasetIdKey='id'
+	return <div className="aspect-[2]">{data.length > 0 ? <Bar className="w-80 h-80" datasetIdKey='id'
 	data={{
-		labels: bars.map((bar)=>bar.date.getDate()),
+		labels: bars.map((bar)=>formatInTimeZone(bar.date, "UTC", "MM/dd/yy")),
 		datasets: [
 			{
 				label: 'Minutes',
 				data: bars.map((bar)=> bar.workouts.reduce((sum, curr)=> sum+curr.duration, 0)),
-			},
+			}, 
 		]}}
-	/>   
+		options={{responsive: true}}
+	/>: "No data for this activity"}</div> 
 }
 
-const App = async () => {
-	const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
+const App = () => {
+	const [loggedInUserName, setLoggedInUserName] = useState<string | null>(null);
 	const [selectedWorkoutType, setSelectedWorkoutType] = useState<WorkoutType | null>("running");
-	const {createWorkout, getUser} = useServer();
+	const {createWorkout, getUser, users} = useServer();
 
 	ChartJS.register(...registerables)
 
-	const data = loggedInUser?.workouts.filter((workout)=>workout.type===selectedWorkoutType)??[]
+	const loggedInUser = loggedInUserName ? users[loggedInUserName] : null
+	const data = loggedInUser?.workouts.filter((workout)=>workout.type===selectedWorkoutType) ?? []
 
 	return (
 		<div className="flex justify-center p-3 flex-col items-center">
 			{loggedInUser? (<div className="flex w-full">
 				<div className="flex flex-col gap-2 bg-blue-50">{workoutTypes.map((workoutType)=>
-					<button key={workoutType} className={`border-0cursor-pointer active:bg-blue-500  hover:bg-blue-400 ${workoutType === selectedWorkoutType ? "bg-blue-600": "bg-blue-300"}`} onClick={()=>setSelectedWorkoutType(workoutType)}>
+					<button key={workoutType} className={`border-0 cursor-pointer active:bg-blue-500  hover:bg-blue-400 ${workoutType === selectedWorkoutType ? "bg-blue-600": "bg-blue-300"}`} onClick={()=>setSelectedWorkoutType(workoutType)}>
 						{workoutType}
 					</button>
 				)}
@@ -123,11 +128,11 @@ const App = async () => {
 				</div>
 				<div>
 					Logged in as {loggedInUser.userName}
-					<button className="border-2 border-r-8" onClick={()=>{
-						setLoggedInUser(null);
+					<button className="border-2 rounded-sm p-3" onClick={()=>{
+						setLoggedInUserName(null);
 					}}>Logout</button>
 				</div>
-			</div>): <LoginComponent setLoggedInUser={setLoggedInUser} getUser={getUser} />}
+			</div>): <LoginComponent setLoggedInUserName={setLoggedInUserName} getUser={getUser} />}
 		</div>
 	);
 };

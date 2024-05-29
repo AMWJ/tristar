@@ -8,7 +8,7 @@
 	"author": "Ariel Jacobs",
 	"dependencies": {
 		"chart.js": "^4.4.3",
-		"date-fns": "^3.6.0",
+		"date-fns-tz": "^3.1.3",
 		"react": "^18.2.0",
 		"react-chartjs-2": "^5.2.0",
 		"react-dom": "^18.2.0"
